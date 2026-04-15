@@ -57,7 +57,7 @@ jobs:
         run: npm run build
         
       - name: Package Windows
-        run: npx electron-builder --win
+        run: npx electron-builder --win --publish never
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           
