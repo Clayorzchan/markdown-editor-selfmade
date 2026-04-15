@@ -1,0 +1,182 @@
+.editor-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-pane,
+.preview-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-pane {
+  border-right: 1px solid #404040;
+}
+
+.pane-header {
+  padding: 8px 16px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editor-wrapper,
+.preview-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.editor-wrapper {
+  background: #2d2d2d;
+}
+
+.code-editor {
+  min-height: 100%;
+  outline: none;
+}
+
+.code-textarea {
+  outline: none !important;
+  caret-color: #fff;
+}
+
+.preview-wrapper {
+  background: #1e1e1e;
+  padding: 16px;
+}
+
+.markdown-preview {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.8;
+  color: #d4d4d4;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.markdown-preview h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #404040;
+}
+
+.markdown-preview h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #404040;
+}
+
+.markdown-preview h3 {
+  font-size: 1.25em;
+}
+
+.markdown-preview p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-preview a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-preview li {
+  margin: 4px 0;
+}
+
+.markdown-preview blockquote {
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #404040;
+  margin: 0 0 16px 0;
+}
+
+.markdown-preview code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background: #3d3d3d;
+  border-radius: 6px;
+  font-family: '"Fira Code", "Fira Mono", monospace';
+}
+
+.markdown-preview pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background: #2d2d2d;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 100%;
+}
+
+.markdown-preview table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  padding: 6px 13px;
+  border: 1px solid #404040;
+}
+
+.markdown-preview th {
+  background: #2d2d2d;
+  font-weight: 600;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  box-sizing: content-box;
+}
+
+.markdown-preview hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background: #404040;
+  border: 0;
+}
+
+.markdown-preview strong {
+  color: #fff;
+  font-weight: 600;
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor - 简单版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .toolbar {
+            background: #2d2d2d;
+            border-bottom: 1px solid #404040;
+            padding: 10px 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: transparent;
+            border: 1px solid #404040;
+            color: #d4d4d4;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .toolbar button:hover {
+            background: #404040;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .pane:first-child {
+            border-right: 1px solid #404040;
+        }
+        .pane-header {
+            background: #2d2d2d;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: #888;
+            border-bottom: 1px solid #404040;
+        }
+        textarea {
+            flex: 1;
+            background: #2d2d2d;
+            color: #d4d4d4;
+            border: none;
+            outline: none;
+            padding: 16px;
+            font-family: 'Fira Code', Monaco, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+        }
+        #preview {
+            flex: 1;
+            padding: 16px;
+            overflow: auto;
+            line-height: 1.8;
+        }
+        #preview h1, #preview h2, #preview h3 { color: #fff; margin: 20px 0 10px; }
+        #preview h1 { font-size: 2em; border-bottom: 1px solid #404040; padding-bottom: 10px; }
+        #preview h2 { font-size: 1.5em; border-bottom: 1px solid #404040; padding-bottom: 8px; }
+        #preview p { margin: 10px 0; }
+        #preview code {
+            background: #3d3d3d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        #preview pre {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        #preview pre code { background: transparent; padding: 0; }
+        #preview blockquote {
+            border-left: 4px solid #404040;
+            padding-left: 16px;
+            color: #8b949e;
+            margin: 10px 0;
+        }
+        #preview ul, #preview ol { padding-left: 30px; margin: 10px 0; }
+        #preview a { color: #58a6ff; }
+        #preview hr { border: none; border-top: 1px solid #404040; margin: 20px 0; }
+        #preview strong { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="openFile()">打开</button>
+        <button onclick="saveFile()">保存</button>
+        <button onclick="insert('# ')">H1</button>
+        <button onclick="insert('## ')">H2</button>
+        <button onclick="insert('### ')">H3</button>
+        <button onclick="insert('**', '**')">粗体</button>
+        <button onclick="insert('*', '*')">斜体</button>
+        <button onclick="insert('`', '`')">代码</button>
+        <button onclick="insert('```\n', '\n```')">代码块</button>
+        <button onclick="insert('- ')">列表</button>
+        <button onclick="insert('1. ')">有序列表</button>
+        <button onclick="insert('> ')">引用</button>
+        <button onclick="insert('[', '](url)')">链接</button>
+    </div>
+    <div class="container">
+        <div class="pane">
+            <div class="pane-header">编辑</div>
+            <textarea id="editor" oninput="updatePreview()"></textarea>
+        </div>
+        <div class="pane">
+            <div class="pane-header">预览</div>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <script>
+        // 简单的 Markdown 解析器
+        function parseMarkdown(text) {
+            return text
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+                .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%">')
+                .replace(/^(.*)$/gm, function(match, p1) {
+                    if (!p1.match(/^<(h\d|ul|ol|li|blockquote|pre|p)/)) {
+                        return '<p>' + p1 + '</p>';
+                    }
+                    return match;
+                })
+                .replace(/\n\n/g, '</p><p>');
+        }
+
+        function updatePreview() {
+            var text = document.getElementById('editor').value;
+            // 简易解析（处理换行和粗体斜体等基础语法
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            html = html
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/~~(.*?)~~/g, '<del>$1</del>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // 代码块
+            let inCode = false;
+            let lines = html.split('\n');
+            let result = [];
+            for (let line of lines) {
+                if (line.trim().startsWith('```')) {
+                    inCode = !inCode;
+                    result.push(inCode ? '<pre><code>' : '</code></pre>');
+                } else if (inCode) {
+                    result.push(line);
+                } else if (line.trim().startsWith('> ')) {
+                    result.push('<blockquote>' + line.substring(2) + '</blockquote>');
+                } else if (line.trim().startsWith('- ')) {
+                    result.push('<li>' + line.substring(2) + '</li>');
+                } else if (line.trim().match(/^\d+\. /)) {
+                    result.push('<li>' + line.replace(/^\d+\. /, '') + '</li>');
+                } else if (line.trim() === '') {
+                    result.push('');
+                } else {
+                    result.push('<p>' + line + '</p>');
+                }
+            }
+            html = result.join('\n');
+            
+            document.getElementById('preview').innerHTML = html;
+        }
+
+        function insert(before, after = '') {
+            const editor = document.getElementById('editor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            const newValue = editor.value.substring(0, start) + before + selectedText + after + editor.value.substring(end);
+            editor.value = newValue;
+            editor.focus();
+            editor.selectionStart = editor.selectionEnd = start + before.length + selectedText.length;
+            updatePreview();
+        }
+
+        function saveFile() {
+            const content = document.getElementById('editor').value;
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'document.md';
+            a.click();
+        }
+
+        function openFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.md,.txt';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('editor').value = event.target.result;
+                    updatePreview();
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // 初始化示例内容
+        document.getElementById('editor').value = `# 欢迎使用 Markdown 编辑器
+
+这是一个简单但功能完整的 Markdown 编辑器！
+
+## 功能
+
+- **实时预览**
+- *斜体*
+- ~~删除线~~
+- `行内代码`
+
+## 代码块
+
+\`\`\`
+function hello() {
+    console.log('Hello World!');
+}
+\`\`\`
+
+## 列表
+
+- 第一项
+- 第二项
+- 第三项
+
+> 这是引用
+
+开始编写你的 Markdown 文档吧！
+`;
+        updatePreview();
+    </script>
+</body>
+</html>
